@@ -27,7 +27,10 @@ SECRET_KEY = 'django-insecure-65bzugdd&t9)mnq(-kc_pjr3)6!ahzo1fiwgfb^wyxt96zdf)(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    os.environ.get("RENDER_EXTERNAL_HOSTNAME"),  # Render host from env vars
+    "freelancer-crm-ipx8.onrender.com",          # Your actual Render domain
+]
 
 
 # Application definition
