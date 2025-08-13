@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-65bzugdd&t9)mnq(-kc_pjr3)6!ahzo1fiwgfb^wyxt96zdf)(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["freelancer-crm-ipx8.onrender.com"]
+ALLOWED_HOSTS = ["freelancer-crm-ipx8.onrender.com", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = ["https://freelancer-crm-ipx8.onrender.com"]
 
 
@@ -36,6 +36,7 @@ CSRF_TRUSTED_ORIGINS = ["https://freelancer-crm-ipx8.onrender.com"]
 
 INSTALLED_APPS = [
     'crm',
+    'corsheaders',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,11 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-}
+
 
 
 MIDDLEWARE = [
@@ -58,9 +55,21 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite default
+    "http://127.0.0.1:5173",
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+}
 
 ROOT_URLCONF = 'crm_project.urls'
 
