@@ -122,7 +122,6 @@ export default function Projects() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Budget</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Due</th>
                 </tr>
               </thead>

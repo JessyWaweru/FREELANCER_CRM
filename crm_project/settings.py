@@ -12,14 +12,44 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import dj_database_url
-import os
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# If you want to read .env automatically (recommended):
+# pip install django-environ
+# import environ
+# env = environ.Env()
+# environ.Env.read_env(BASE_DIR / ".env")
+# DATABASE_URL = env("DATABASE_URL")  # then use this variable below
 
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / ".env")  # <-- THIS reads .env
+
+
+DATABASE_URL = env("DATABASE_URL", default="")  # get from .env
+
+if not DATABASE_URL:
+    # if you want Postgres mandatory in prod only:
+    if not DEBUG:
+        raise RuntimeError("DATABASE_URL is not set but Postgres is required.")
+    # fallback for local dev if missing
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+         }
+else:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    }
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-65bzugdd&t9)mnq(-kc_pjr3)6!ahzo1fiwgfb^wyxt96zdf)('
@@ -70,7 +100,11 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
-
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("Bearer",),  # must match the header you send
+    # Optional but helpful with clock skew:
+    "LEEWAY": 60,
+}
 ROOT_URLCONF = 'crm_project.urls'
 
 TEMPLATES = [
@@ -94,9 +128,7 @@ WSGI_APPLICATION = 'crm_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
-}
+
 
 
 # Password validation
