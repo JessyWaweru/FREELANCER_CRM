@@ -4,11 +4,12 @@ from rest_framework.routers import DefaultRouter
 # for your ViewSets.
 # Without it, you’d have to manually write all the paths for list, 
 # retrieve, create, update, and delete.
-from .views import ClientViewSet, ProjectViewSet, InvoiceViewSet
+from .views import ClientViewSet, ProjectViewSet, InvoiceViewSet,RegisterViewSet
 
 router = DefaultRouter()
 router.register(r"clients", ClientViewSet, basename="client")
 router.register(r"projects", ProjectViewSet, basename="project")
 router.register(r"invoices", InvoiceViewSet, basename="invoice")
+router.register(r"register", RegisterViewSet, basename="register")
 
 urlpatterns = [path("", include(router.urls))]

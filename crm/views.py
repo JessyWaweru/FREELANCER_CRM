@@ -1,9 +1,19 @@
 # crm/api_views.py
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions,mixins 
 #viewsets → A DRF shortcut that gives you list, retrieve, create, update, and delete
 #  actions automatically for a model.
 from .models import Client, Project, Invoice
-from .serializers import ClientSerializer, ProjectSerializer, InvoiceSerializer
+from .serializers import ClientSerializer, ProjectSerializer, InvoiceSerializer, RegisterSerializer
+from django.contrib.auth import get_user_model
+from rest_framework.permissions import AllowAny
+
+
+User = get_user_model()
+
+class RegisterViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
 
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
