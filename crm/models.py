@@ -16,7 +16,8 @@ class Client(models.Model):
     name = models.CharField(max_length=200)
     email = models.EmailField(blank=True)
     #blank=True means the field can be left empty in forms.
-    phone = models.CharField(max_length=50, blank=True)
+    phone = models.CharField(max_length=50)
+    company = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Project(models.Model):

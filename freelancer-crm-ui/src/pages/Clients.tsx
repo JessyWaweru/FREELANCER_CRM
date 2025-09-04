@@ -5,12 +5,14 @@ import api from "../api";
 
 type Client = {
     //A TypeScript type describing what a Client object looks like.
-  id: number; name: string; email: string; phone: string; 
+  id: number; name: string; email: string; phone: string; company: string;
 };
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState<number | "">("");
+  const [company, setCompany] = useState("");
 //clients → Array of all clients fetched from the backend.
 // name → The value of the new client name input field.
 
@@ -24,9 +26,11 @@ export default function Clients() {
 
   async function addClient(e: React.FormEvent) {
     e.preventDefault();
-    const { data } = await api.post("/clients/", { name });
+    const { data } = await api.post("/clients/", { name ,phone,company});
     setClients([data, ...clients]);
     setName("");
+    setPhone("");
+    setCompany("");
     //Sends a POST /clients/ with { name } as the body.
 
     //Takes the newly created client from the backend response (data) and:
@@ -52,20 +56,45 @@ export default function Clients() {
       <main className="mx-auto max-w-5xl px-4 py-6 space-y-6">
         {/* Add client form, styled like a card */}
         <form onSubmit={addClient} className="bg-white rounded-2xl shadow p-6">
-          <label className="block text-sm font-medium text-gray-700">Client name</label>
-          <div className="mt-2 flex items-center gap-3">
-            <input
-              placeholder="Client name"
-              value={name}
-              onChange={e=>setName(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
+           <label className="block">
+          <div className="text-sm mb-1">Client Name</div>
+          <input
+            className="w-full border rounded p-2"
+            placeholder="e.g., Jane Doe"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </label>
+             <label className="block">
+          <div className="text-sm mb-1">Contact</div>
+          <input
+            className="w-full border rounded p-2"
+            type="number"
+            min={0}
+            placeholder="client phone"
+            value={phone}
+            onChange={(e) => {
+              const v = e.target.value;
+              setPhone(v === "" ? "" : Number(v));
+            }}
+          />
+        </label>
+          <label className="block">
+          <div className="text-sm mb-1">Company</div>
+          <input
+            className="w-full border rounded p-2"
+            placeholder="e.g., Acme Inc."
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+          />
+        </label>
             <button
               className="rounded-lg bg-indigo-600 text-white px-4 py-2 font-medium hover:bg-indigo-700 transition"
             >
               Add
             </button>
-          </div>
+          
           {/* Tiny hint below the form */}
           <p className="mt-2 text-xs text-gray-500">
             New clients appear at the top of the list.
@@ -85,9 +114,9 @@ export default function Clients() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{c.name}</div>
-                      <div className="text-sm text-gray-600">{c.email}</div>
+                      <div className="text-sm text-gray-600">{c.phone}</div>
                     </div>
-                    <div className="text-sm text-gray-500">{c.phone}</div>
+                    <div className="text-sm text-gray-500">{c.company}</div>
                   </div>
                 </li>
               ))
