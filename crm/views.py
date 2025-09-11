@@ -62,27 +62,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class ClientProjectsList(generics.ListAPIView):
-    """
-    Read-only nested endpoint for a single client's projects:
-      GET /api/clients/<client_id>/projects/
 
-    Why this exists even with the query-param option:
-      - Clean, discoverable URL when you navigate from a client detail.
-      - Keeps backend flexible: both /projects?client=<id> and nested route work.
-    """
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        client_id = self.kwargs["client_id"]
-        # Security: still ensure the client belongs to the requesting user.
-        # select_related("client") → include client row in the same query for performance
-        return (
-            Project.objects
-            .select_related("client")
-            .filter(client_id=client_id, client__owner=self.request.user)
-        )
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):

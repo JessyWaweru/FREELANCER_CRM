@@ -1,8 +1,25 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 #get_user_model() → Returns the active User model.
 
 User = get_user_model()
+
+
+CURRENCY_CHOICES = [
+    ("USD", "USD - US Dollar"),
+    ("KES", "KES - Kenyan Shilling"),
+    ("EUR", "EUR - Euro"),
+    ("GBP", "GBP - British Pound"),
+    # add more as needed
+]
+
+PAYMENT_CHOICES = [
+        ("paid", "Paid"),
+        ("unpaid", "Unpaid"),
+        ("partial", "Partially paid"),
+    ]
 
 class Client(models.Model):
     #You’re creating a Python class (Client) that inherits from models.Model.
@@ -23,9 +40,20 @@ class Client(models.Model):
 class Project(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="projects")
     title = models.CharField(max_length=200)
-    status = models.CharField(max_length=30, default="active")  # active/completed/on-hold
-    notes = models.TextField(blank=True)
+    status = models.CharField( default="active")  # active/completed/on-hold
+   
     due_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField(auto_now_add=True, null=False, blank=False)
+     # NEW field: currency (3-letter ISO code). default prevents migration prompt
+    payment_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default="USD")
+
+
+    payment_status = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="unpaid")
+
+
+    payment_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
 
 class Invoice(models.Model):
     DRAFT, SENT, PAID, OVERDUE = "draft", "sent", "paid", "overdue"
