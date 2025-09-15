@@ -1,6 +1,6 @@
 # Enables full CRUD over your models through API calls.
 from rest_framework import serializers
-from .models import Client, Project, Invoice
+from .models import Client, Project
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -34,8 +34,3 @@ class ProjectSerializer(serializers.ModelSerializer):
         # plus the extra client_name + client_id we defined above.
 
 
-class InvoiceSerializer(serializers.ModelSerializer):
-    # Basic serializer, no extra fields for now.
-    class Meta:
-        model = Invoice
-        fields = "__all__"

@@ -7,7 +7,6 @@ import Login from "./pages/Login";
 import Clients from "./pages/Clients";
 import ProtectedRoute from "./ProtectedRoute";
 import Projects from "./pages/Projects";
-import Invoices from "./pages/Invoices";
 import Signup from "./pages/Signup";
 
 const router = createBrowserRouter([
@@ -21,7 +20,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Clients /> },
        { path: "projects", element: <Projects /> },
-    { path: "invoices", element: <Invoices /> },
+    
       // Add more protected pages here
     ],
   },

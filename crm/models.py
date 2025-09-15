@@ -55,15 +55,3 @@ class Project(models.Model):
         max_digits=10, decimal_places=2, default=Decimal("0.00")
     )
 
-class Invoice(models.Model):
-    DRAFT, SENT, PAID, OVERDUE = "draft", "sent", "paid", "overdue"
-    STATUS_CHOICES = [(DRAFT,"Draft"),(SENT,"Sent"),(PAID,"Paid"),(OVERDUE,"Overdue")]
-#Constants for invoice status — helps avoid typos and makes filtering easier.
-#STATUS_CHOICES → Restricts status field to one of these four values.
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="invoices")
-    number = models.CharField(max_length=30, unique=True)
-    #Invoice number must be unique (e.g., INV-2025-001).
-    issue_date = models.DateField(auto_now_add=True)
-    due_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=DRAFT)
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)

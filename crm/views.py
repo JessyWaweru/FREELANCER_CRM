@@ -3,8 +3,8 @@ from rest_framework import viewsets, permissions, mixins, generics
 #  actions automatically for a model.
 # generics.ListAPIView → Quick way to build read-only list endpoints (like nested routes).
 
-from .models import Client, Project, Invoice
-from .serializers import ClientSerializer, ProjectSerializer, InvoiceSerializer
+from .models import Client, Project
+from .serializers import ClientSerializer, ProjectSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -65,11 +65,4 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
 
-class InvoiceViewSet(viewsets.ModelViewSet):
-    serializer_class = InvoiceSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # Only invoices whose client belongs to the logged-in user.
-        return Invoice.objects.filter(client__owner=self.request.user)
 

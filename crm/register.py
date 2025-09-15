@@ -9,7 +9,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # Default User REQUIRES username. Email is optional but recommended.
-        fields = ("username", "email", "password")
+        fields = ("username",  "password")
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate_username(self, value):
@@ -17,12 +17,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Username already taken.")
         return value
 
-    def validate_email(self, value):
-        # Make email optional but unique if provided
-        if value and User.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError("Email already in use.")
-        return value
-
+    
     def create(self, validated_data):
         try:
             # Uses Django's built-in hashing via create_user
