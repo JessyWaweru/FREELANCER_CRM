@@ -57,8 +57,6 @@ else:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-65bzugdd&t9)mnq(-kc_pjr3)6!ahzo1fiwgfb^wyxt96zdf)('
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = ["freelancer-crm-ipx8.onrender.com", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = ["https://freelancer-crm-ipx8.onrender.com"]
@@ -113,7 +111,7 @@ ROOT_URLCONF = 'crm_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
