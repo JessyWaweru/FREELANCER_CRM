@@ -32,6 +32,9 @@ environ.Env.read_env(BASE_DIR / ".env")  # <-- THIS reads .env
 
 DATABASE_URL = env("DATABASE_URL", default="")  # get from .env
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env.bool("DEBUG", default=False)
+
 if not DATABASE_URL:
     # if you want Postgres mandatory in prod only:
     if not DEBUG:
