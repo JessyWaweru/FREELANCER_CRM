@@ -112,9 +112,7 @@ ROOT_URLCONF = 'crm_project.urls'
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / "crm_project" / "templates",  
-        ],
+        "DIRS": [],  # no more templates
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -127,6 +125,7 @@ TEMPLATES = [
     },
 ]
 
+    
 WSGI_APPLICATION = 'crm_project.wsgi.application'
 
 
