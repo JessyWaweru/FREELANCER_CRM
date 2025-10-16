@@ -1,6 +1,7 @@
 import { Outlet, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-
+import { LogOut } from "lucide-react";
+import logo from "./assets/logo.png.png"; // 👈 place logo in src/assets/
 export default function App() {
   const [username, setUsername] = useState<string | null>(null);
 
@@ -15,26 +16,26 @@ export default function App() {
 
   return (
     <div>
-      <nav className="flex items-center justify-between border-b border-gray-300 px-4 py-3">
+      <nav className="flex items-center justify-between border-b border-gray-300 bg-gradient-to-br from-indigo-600 to-purple-700 px-4 py-3">
         {/* Left side links */}
         <div className="space-x-4">
-          <Link to="/" className="text-blue-600 hover:underline">
-            Clients    ||
+          <Link to="/" className="text-white hover:animate-pulse transition-transform">
+            Clients    |
           </Link>
-          <Link to="/projects" className="text-blue-600 hover:underline">
+          <Link to="/projects" className="text-white hover:animate-pulse transition-transform">
             Projects
           </Link>
         </div>
 
         {/* Right side - Greeting + Logout */}
         <div className="flex items-center space-x-4">
-          {username && (
-            <span className="text-red-700 font-medium">
-              Hello, {username} 👋
-            </span>
-          )}
-          <Link to="/login" className="text-red-600 hover:underline">
-            Logout
+            {/* ✅ Logo */}
+        <img
+          src={logo}
+          alt="Freelancer CRM Logo"
+         className="absolute top-0 left-130 w-50 h-40" />
+          <Link to="/login" >
+            <LogOut className="w-6 h-6 text-white hover:scale-110 transition-transform" />
           </Link>
         </div>
       </nav>

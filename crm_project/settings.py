@@ -81,6 +81,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # 👈 must be on top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -91,8 +92,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite default
-    "http://127.0.0.1:5173",
+    "http://localhost:5174",  # Vite default
+    "http://127.0.0.1:5174",
 ]
 
 REST_FRAMEWORK = {
@@ -175,3 +176,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CORS_ALLOW_CREDENTIALS = True

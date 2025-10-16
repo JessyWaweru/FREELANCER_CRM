@@ -8,10 +8,14 @@ import Clients from "./pages/Clients";
 import ProtectedRoute from "./ProtectedRoute";
 import Projects from "./pages/Projects";
 import Signup from "./pages/Signup";
+import LandingPage from "./pages/LandingPage";
 
 const router = createBrowserRouter([
+  { path: "/", element: <LandingPage /> }, // 👈 public landing page
+  { path: "/login", element: <Login /> },
+  { path: "/signup", element: <Signup /> },
   {
-    path: "/",
+    path: "/app",
     element: (
       <ProtectedRoute>
         <App />
@@ -19,13 +23,10 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Clients /> },
-       { path: "projects", element: <Projects /> },
-    
+      { path: "projects", element: <Projects /> },
       // Add more protected pages here
     ],
   },
-  { path: "/login", element: <Login /> },
-   { path: "/signup", element: <Signup /> },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -33,7 +34,3 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <RouterProvider router={router} />
   </React.StrictMode>
 );
-
-
-
-

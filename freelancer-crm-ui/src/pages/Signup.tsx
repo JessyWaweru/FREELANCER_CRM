@@ -4,7 +4,7 @@ import { useState } from "react";
 import api from "../api";
 import { login } from "../auth";
 import { useNavigate, Link } from "react-router-dom";
-
+import logo from "../assets/logo.png.png"; // 👈 place logo in src/assets/
 /* final-password validation: min 8 chars, at least one uppercase,
    one lowercase, and at least one digit OR symbol */
 function validatePassword(pw: string) {
@@ -80,7 +80,7 @@ export default function Signup() {
       try {
         await login(username.trim(), password);
         // login succeeded, go to protected area
-        nav("/");
+        nav("/app");
         return;
       } catch (loginErr) {
         // auto-login failed (401 or other) — show message and redirect to login page
@@ -120,7 +120,12 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center px-4">
+      <img
+          src={logo}
+          alt="Freelancer CRM Logo"
+         className="absolute top-0 right-4 w-50 h-40" />
+
       <form onSubmit={onSubmit} className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
         <h2 className="text-2xl font-semibold text-gray-900">Create Account</h2>
 
