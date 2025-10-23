@@ -6,3 +6,6 @@
 
 ### HOW TO START SERVER ON DJANGO:
 `python manage.py runserver`
+
+### HOW TO START SERVER ON REACT/VITE:
+`npm run dev`
