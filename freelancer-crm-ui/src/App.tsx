@@ -1,9 +1,10 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import logo from "./assets/logo.png.png"; // 👈 place logo in src/assets/
 export default function App() {
   const [username, setUsername] = useState<string | null>(null);
+const navigate = useNavigate();
 
   useEffect(() => {
     // Assuming you stored user info in localStorage after login
@@ -14,31 +15,43 @@ export default function App() {
     }
   }, []);
 
+   const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <div>
-      <nav className="flex items-center justify-between border-b border-gray-300 bg-gradient-to-br from-indigo-600 to-purple-700 px-4 py-3">
-        {/* Left side links */}
-        <div className="space-x-4">
-          <Link to="/" className="text-white hover:animate-pulse transition-transform">
-            Clients    |
-          </Link>
-          <Link to="/projects" className="text-white hover:animate-pulse transition-transform">
-            Projects
-          </Link>
-        </div>
+     <nav className="flex items-center justify-between border-b border-gray-300 bg-gradient-to-br from-indigo-600 to-purple-700 px-6 py-3 relative">
+  {/* Left side - links */}
+  <div className="flex items-center space-x-6">
+    <Link to="/app" className="text-white hover:animate-pulse transition-transform">
+      Clients
+    </Link>
+    <span className="text-white">|</span>
+    <Link to="/app/projects" className="text-white hover:animate-pulse transition-transform">
+      Projects
+    </Link>
+  </div>
 
-        {/* Right side - Greeting + Logout */}
-        <div className="flex items-center space-x-4">
-            {/* ✅ Logo */}
-        <img
-          src={logo}
-          alt="Freelancer CRM Logo"
-         className="absolute top-0 left-130 w-50 h-40" />
-          <Link to="/login" >
-            <LogOut className="w-6 h-6 text-white hover:scale-110 transition-transform" />
-          </Link>
-        </div>
-      </nav>
+  {/* Center - logo */}
+  <div className="absolute left-1/2 transform -translate-x-1/2">
+    <img
+      src={logo}
+      alt="Freelancer CRM Logo"
+      className="w-25 h-25 object-contain"
+    />
+  </div>
+
+  {/* Right side - logout button */}
+  <button
+    onClick={handleLogout}
+    className="text-white hover:scale-110 transition-transform"
+  >
+    <LogOut className="w-6 h-6" />
+  </button>
+</nav>
 
       <main className="p-4">
         <Outlet />
