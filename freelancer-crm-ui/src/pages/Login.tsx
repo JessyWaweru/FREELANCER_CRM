@@ -22,12 +22,12 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center px-4">
       
-        {/* ✅ Logo */}
-        <img
-          src={logo}
-          alt="Freelancer CRM Logo"
-         className="absolute top-0 right-4 w-50 h-40" />
-
+       {/* ✅ Responsive logo - top right, scales down on small screens */}
+      <img
+        src={logo}
+        alt="Freelancer CRM Logo"
+        className="absolute top-4 right-4 w-32 h-20 sm:w-40 sm:h-24 md:w-48 md:h-28 object-contain"
+      />
 
         
 

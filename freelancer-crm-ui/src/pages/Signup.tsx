@@ -121,11 +121,12 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center px-4">
+      {/* ✅ Responsive logo - top right, scales down on small screens */}
       <img
-          src={logo}
-          alt="Freelancer CRM Logo"
-         className="absolute top-0 right-4 w-50 h-40" />
-
+        src={logo}
+        alt="Freelancer CRM Logo"
+        className="absolute top-4 right-4 w-32 h-20 sm:w-40 sm:h-24 md:w-48 md:h-28 object-contain"
+      />
       <form onSubmit={onSubmit} className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
         <h2 className="text-2xl font-semibold text-gray-900">Create Account</h2>
 
