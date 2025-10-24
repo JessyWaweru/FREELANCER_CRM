@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import api from "../api"; // API helper to handle backend requests
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 // 🧩 Type definition for a Client object
 type Client = {
@@ -64,26 +67,22 @@ export default function Clients() {
           className="bg-white rounded-2xl shadow p-6 flex flex-col gap-4 sm:gap-6 sm:p-8"
         >
           {/* Client Name input */}
-          <label className="block">
-            <div className="text-sm mb-1 font-medium text-gray-700">
-              Client Name
-            </div>
-            <input
-              className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+          <div>
+            <Label htmlFor="name">Client Name</Label>
+            <Input
+              id="name"
               placeholder="e.g., Jane Doe"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
-          </label>
+          </div>
 
           {/* Client Contact input */}
-          <label className="block">
-            <div className="text-sm mb-1 font-medium text-gray-700">
-              Contact
-            </div>
-            <input
-              className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+          <div>
+            <Label htmlFor="phone">Contact</Label>
+            <Input
+              id="phone"
               type="number"
               min={0}
               placeholder="client phone"
@@ -93,27 +92,23 @@ export default function Clients() {
                 setPhone(v === "" ? "" : Number(v));
               }}
             />
-          </label>
+          </div>
 
           {/* Client Company input */}
-          <label className="block">
-            <div className="text-sm mb-1 font-medium text-gray-700">
-              Company
-            </div>
-            <input
-              className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+          <div>
+            <Label htmlFor="company">Company</Label>
+            <Input
+              id="company"
               placeholder="e.g., Acme Inc."
               value={company}
               onChange={(e) => setCompany(e.target.value)}
             />
-          </label>
+          </div>
 
           {/* Submit button */}
-          <button
-            className="rounded-lg bg-indigo-600 text-white px-4 py-2 font-medium hover:bg-indigo-700 transition w-full sm:w-auto"
-          >
+          <Button type="submit" className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white">
             Add
-          </button>
+          </Button>
 
           {/* Tiny helper text below form */}
           <p className="mt-2 text-xs text-gray-500">
@@ -141,9 +136,7 @@ export default function Clients() {
                       <div className="font-medium text-gray-900">{c.name}</div>
                       <div className="text-gray-600">{c.phone}</div>
                     </div>
-                    <div className="text-gray-500 mt-1 sm:mt-0">
-                      {c.company}
-                    </div>
+                    <div className="text-gray-500 mt-1 sm:mt-0">{c.company}</div>
                   </div>
                 </li>
               ))

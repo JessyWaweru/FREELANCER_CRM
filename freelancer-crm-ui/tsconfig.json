@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+      "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "target": "ESNext",
     "lib": ["ESNext", "DOM"],
     "module": "ESNext",
@@ -9,7 +13,6 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-     
   },
   "include": ["src", "vite-env.d.ts"]
 }
