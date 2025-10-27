@@ -103,9 +103,9 @@ export default function Signup() {
 
       <form
         onSubmit={onSubmit}
-        className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md space-y-6"
+        className="bg-white/10  shadow-lg rounded-2xl p-8 w-full max-w-md space-y-6"
       >
-        <h2 className="text-2xl font-semibold text-gray-900 text-center">Create Account</h2>
+        <h2 className="text-2xl font-semibold text-white text-center">Create Account</h2>
 
         {error && (
           <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded p-2">
@@ -113,7 +113,7 @@ export default function Signup() {
           </p>
         )}
 
-        <div>
+        <div className="flex flex-col space-y-2 text-white">
           <Label htmlFor="username">Username</Label>
           <Input
             id="username"
@@ -125,7 +125,7 @@ export default function Signup() {
           />
         </div>
 
-        <div>
+        <div className="flex flex-col space-y-2 text-white">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Input
@@ -150,7 +150,7 @@ export default function Signup() {
 
           {/* Password strength meter */}
           <div className="mt-3">
-            <div className="flex justify-between text-xs text-gray-600">
+            <div className="flex justify-between text-xs text-white">
               <span>Password strength</span>
               <span className="font-medium">{strengthText}</span>
             </div>
@@ -179,9 +179,9 @@ export default function Signup() {
           {loading ? "Creating account..." : "Sign Up"}
         </Button>
 
-        <p className="text-sm text-center text-gray-500">
+        <p className="text-sm text-center text-white">
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-600 hover:underline">
+          <Link to="/login" className="text-black hover:underline">
             Log in
           </Link>
         </p>
