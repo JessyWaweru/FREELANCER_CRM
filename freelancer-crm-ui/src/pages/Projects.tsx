@@ -46,10 +46,38 @@ export default function Projects() {
     payment_currency: "USD",
   });
 
-  const [tab, setTab] = useState<"all" | "active" | "completed">("all");
+  // Tabs: added "outstanding"
+  const [tab, setTab] = useState<"all" | "active" | "completed" | "outstanding">(
+    "all"
+  );
   const [search, setSearch] = useState("");
 
   const currencyOptions = ["USD", "KES", "EUR", "GBP"];
+
+  /* ---------- Inline edit states ---------- */
+  // Which project is showing delete confirm
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(
+    null
+  );
+
+  // Which project is editing payment fields
+  const [editingPaymentId, setEditingPaymentId] = useState<number | null>(null);
+  const [editingPaymentValues, setEditingPaymentValues] = useState<{
+    [projectId: number]: { amount: string; currency: string };
+  }>({});
+
+  // Which project is editing payment status
+  const [editingPaymentStatusId, setEditingPaymentStatusId] = useState<
+    number | null
+  >(null);
+  const [editingPaymentStatusValue, setEditingPaymentStatusValue] = useState<
+    PaymentStatus | null
+  >(null);
+
+  // Which project is showing confirm for status toggle
+  const [confirmToggleStatusId, setConfirmToggleStatusId] = useState<
+    number | null
+  >(null);
 
   /* ---------- Fetch data ---------- */
   useEffect(() => {
@@ -91,50 +119,39 @@ export default function Projects() {
     return p.status !== "completed" && p.due_date < today;
   };
 
-  const toggleStatus = async (p: Project) => {
-    const newStatus = p.status === "completed" ? "active" : "completed";
-    const prev = p.status;
-    setProjects((prevList) =>
-      prevList.map((proj) => (proj.id === p.id ? { ...proj, status: newStatus } : proj))
-    );
-    try {
-      await api.patch(`/projects/${p.id}/`, { status: newStatus });
-    } catch (err) {
-      console.error(err);
-      setProjects((prevList) =>
-        prevList.map((proj) => (proj.id === p.id ? { ...proj, status: prev } : proj))
-      );
-      setError("Failed to update status.");
-    }
-  };
+  /* ---------- API actions with optimistic updates ---------- */
 
-  const updateProject = async (
+  // Update a project field with optimistic UI and rollback on failure
+  const patchProjectField = async (
     projectId: number,
-    field: "payment_amount" | "payment_currency",
-    value: any
-  ) => {
-    const prevProj = projects.find((p) => p.id === projectId);
-    setProjects((prev) =>
-      prev.map((p) => (p.id === projectId ? { ...p, [field]: value } : p))
+    patch: Partial<Project>
+  ): Promise<boolean> => {
+    const prev = projects.find((p) => p.id === projectId);
+    setProjects((prevList) =>
+      prevList.map((p) => (p.id === projectId ? { ...p, ...patch } : p))
     );
     try {
-      await api.patch(`/projects/${projectId}/`, { [field]: value });
+      await api.patch(`/projects/${projectId}/`, patch);
+      return true;
     } catch (err) {
       console.error(err);
-      if (prevProj)
-        setProjects((prev) =>
-          prev.map((p) => (p.id === projectId ? prevProj : p))
+      if (prev) {
+        setProjects((prevList) =>
+          prevList.map((p) => (p.id === projectId ? prev : p))
         );
+      }
       setError("Failed to update project.");
+      return false;
     }
   };
 
-  const deleteProject = async (p: Project) => {
-    if (!confirm(`Are you sure you want to delete project "${p.title}"?`)) return;
+  // Confirmed deletion (called after inline confirm)
+  const performDelete = async (project: Project) => {
     const prevProjects = [...projects];
-    setProjects((prev) => prev.filter((proj) => proj.id !== p.id));
+    setProjects((prev) => prev.filter((p) => p.id !== project.id));
+    setConfirmingDeleteId(null);
     try {
-      await api.delete(`/projects/${p.id}/`);
+      await api.delete(`/projects/${project.id}/`);
     } catch (err) {
       console.error(err);
       setProjects(prevProjects);
@@ -142,6 +159,7 @@ export default function Projects() {
     }
   };
 
+  /* ---------- Add project ---------- */
   const addProject = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -177,13 +195,125 @@ export default function Projects() {
 
   /* ---------- Filtered Projects ---------- */
   const filteredProjects = projects.filter((p) => {
-    const matchesTab = tab === "all" ? true : p.status === tab;
+    const matchesTab =
+      tab === "all"
+        ? true
+        : tab === "active"
+        ? p.status === "active"
+        : tab === "completed"
+        ? p.status === "completed"
+        : // outstanding tab: any project with unpaid or partial
+          tab === "outstanding"
+        ? p.payment_status === "unpaid" || p.payment_status === "partial"
+        : true;
+
     const clientName = clients.find((c) => c.id === p.client)?.name || "";
     const matchesSearch =
       p.title.toLowerCase().includes(search.toLowerCase()) ||
       clientName.toLowerCase().includes(search.toLowerCase());
     return matchesTab && matchesSearch;
   });
+
+  /* ---------- Inline edit flows ---------- */
+
+  // Payment editing
+  const startEditPayment = (p: Project) => {
+    setEditingPaymentId(p.id);
+    setEditingPaymentValues((prev) => ({
+      ...prev,
+      [p.id]: {
+        amount: p.payment_amount == null ? "" : String(p.payment_amount),
+        currency: p.payment_currency ?? "USD",
+      },
+    }));
+  };
+  const cancelEditPayment = (projectId: number) => {
+    setEditingPaymentId((id) => (id === projectId ? null : id));
+    setEditingPaymentValues((prev) => {
+      const copy = { ...prev };
+      delete copy[projectId];
+      return copy;
+    });
+  };
+  const saveEditPayment = async (projectId: number) => {
+    const values = editingPaymentValues[projectId];
+    if (!values) return;
+    const amount = values.amount === "" ? null : Number(values.amount);
+    const currency = values.currency || "USD";
+
+    const prev = projects.find((p) => p.id === projectId) ?? null;
+    // optimistic update
+    setProjects((prevList) =>
+      prevList.map((p) =>
+        p.id === projectId
+          ? { ...p, payment_amount: amount ?? undefined, payment_currency: currency }
+          : p
+      )
+    );
+
+    cancelEditPayment(projectId);
+    try {
+      await api.patch(`/projects/${projectId}/`, {
+        payment_amount: amount,
+        payment_currency: currency,
+      });
+    } catch (err) {
+      console.error(err);
+      if (prev) {
+        setProjects((prevList) =>
+          prevList.map((p) => (p.id === projectId ? prev : p))
+        );
+      }
+      setError("Failed to update payment.");
+    }
+  };
+
+  // Payment status editing
+  const startEditPaymentStatus = (p: Project) => {
+    setEditingPaymentStatusId(p.id);
+    setEditingPaymentStatusValue(p.payment_status ?? "unpaid");
+  };
+  const cancelEditPaymentStatus = () => {
+    setEditingPaymentStatusId(null);
+    setEditingPaymentStatusValue(null);
+  };
+  const saveEditPaymentStatus = async (projectId: number) => {
+    if (!editingPaymentStatusValue) return;
+    const prev = projects.find((p) => p.id === projectId) ?? null;
+    setProjects((prevList) =>
+      prevList.map((p) =>
+        p.id === projectId ? { ...p, payment_status: editingPaymentStatusValue } : p
+      )
+    );
+    setEditingPaymentStatusId(null);
+    setEditingPaymentStatusValue(null);
+    try {
+      await api.patch(`/projects/${projectId}/`, {
+        payment_status: editingPaymentStatusValue,
+      });
+    } catch (err) {
+      console.error(err);
+      if (prev) {
+        setProjects((prevList) =>
+          prevList.map((p) => (p.id === projectId ? prev : p))
+        );
+      }
+      setError("Failed to update payment status.");
+    }
+  };
+
+  // Status toggle requires confirm
+  const startToggleStatusConfirm = (p: Project) => {
+    setConfirmToggleStatusId(p.id);
+  };
+  const cancelToggleStatusConfirm = () => setConfirmToggleStatusId(null);
+  const confirmToggleStatus = async (projectId: number) => {
+    const p = projects.find((x) => x.id === projectId);
+    if (!p) return;
+    const newStatus = p.status === "completed" ? "active" : "completed";
+    setConfirmToggleStatusId(null);
+    await patchProjectField(projectId, { status: newStatus });
+  };
 
   /* ---------- Render ---------- */
   return (
@@ -350,21 +480,25 @@ export default function Projects() {
         {/* ---------- Tabs & Search ---------- */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex gap-2">
-            {(["all", "active", "completed"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-3 py-1 rounded-full font-medium ${
-                  tab === t
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {t === "all"
-                  ? "All"
-                  : t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
-            ))}
+            {(["all", "active", "completed", "outstanding"] as const).map(
+              (t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`px-3 py-1 rounded-full font-medium ${
+                    tab === t
+                      ? "bg-indigo-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {t === "all"
+                    ? "All"
+                    : t === "outstanding"
+                    ? "Outstanding Payments"
+                    : t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              )
+            )}
           </div>
 
           <input
@@ -397,88 +531,231 @@ export default function Projects() {
                   ? "bg-yellow-100 text-yellow-800"
                   : "bg-red-100 text-red-800";
 
+              const editingPayment =
+                editingPaymentId === p.id && editingPaymentValues[p.id];
+              const editingPaymentStatus = editingPaymentStatusId === p.id;
+              const confirmingDelete = confirmingDeleteId === p.id;
+              const confirmingToggle = confirmToggleStatusId === p.id;
+
               return (
                 <div
                   key={p.id}
-                  className={`bg-white rounded-2xl shadow p-4 border ${
+                  className={`bg-white rounded-2xl shadow p-4 border flex flex-col justify-between ${
                     overdue ? "border-red-500" : "border-transparent"
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <h3
-                      className={`font-semibold text-lg ${
-                        overdue ? "text-red-600" : "text-gray-900"
-                      }`}
-                    >
-                      {p.title}
-                    </h3>
-                    <div className="flex gap-2 items-center">
-                      <button
-                        onClick={() => toggleStatus(p)}
-                        className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 hover:animate-pulse relative group"
-                        title={`Click to confirm as ${
-                          p.status === "completed" ? "Active" : "Completed"
+                  {/* Top area */}
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <h3
+                        className={`font-semibold text-lg ${
+                          overdue ? "text-red-600" : "text-gray-900"
                         }`}
                       >
-                        {p.status === "completed" ? "Completed" : "Active"}
-                        <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 hidden group-hover:block text-xs text-gray-700 bg-white border rounded px-1 shadow">
-                          Click to confirm
-                        </span>
-                      </button>
+                        {p.title}
+                      </h3>
 
-                      <button
-                        onClick={() => deleteProject(p)}
-                        className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex gap-2 items-center">
+                        {/* status -- click to confirm */}
+                        <div className="relative group">
+                          <button
+                            onClick={() => startToggleStatusConfirm(p)}
+                            className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 hover:animate-pulse"
+                            title="Click to update"
+                          >
+                            {p.status === "completed" ? "Completed" : "Active"}
+                          </button>
+
+                          {/* inline confirm for toggling status */}
+                          {confirmingToggle && (
+                            <div className="mt-2 flex gap-2">
+                              <button
+                                onClick={() => confirmToggleStatus(p.id)}
+                                className="px-3 py-1 rounded bg-indigo-600 text-white text-sm"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={cancelToggleStatusConfirm}
+                                className="px-3 py-1 rounded border text-sm"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* payment status badge (click to update) */}
+                        <div className="relative group">
+                          <span
+                            onClick={() => startEditPaymentStatus(p)}
+                            className={`px-2 py-1 rounded-full text-sm font-medium cursor-pointer ${paymentColor}`}
+                            title="Click to update"
+                          >
+                            {p.payment_status ?? "—"}
+                          </span>
+
+                          {/* inline editor for payment status */}
+                          {editingPaymentStatus && (
+                            <div className="mt-2 flex gap-2 items-center">
+                              <select
+                                value={editingPaymentStatusValue ?? p.payment_status}
+                                onChange={(e) =>
+                                  setEditingPaymentStatusValue(
+                                    e.target.value as PaymentStatus
+                                  )
+                                }
+                                className="px-2 py-1 border rounded"
+                              >
+                                <option value="unpaid">unpaid</option>
+                                <option value="partial">partial</option>
+                                <option value="paid">paid</option>
+                              </select>
+                              <button
+                                onClick={() => saveEditPaymentStatus(p.id)}
+                                className="px-3 py-1 rounded bg-indigo-600 text-white text-sm"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => cancelEditPaymentStatus()}
+                                className="px-3 py-1 rounded border text-sm"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Client badge */}
+                    <div className="mt-2">
+                      <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+                        {client?.name || "—"}
+                      </span>
+                    </div>
+
+                    {/* Dates */}
+                    <div className="mt-3 text-sm text-gray-500">
+                      Start: {p.start_date ?? "—"} | Due: {p.due_date ?? "—"}
+                    </div>
+
+                    {/* Payment display (click to edit) */}
+                    <div className="mt-3">
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-sm">Payment:</span>
+
+                        {!editingPayment ? (
+                          <div
+                            className="flex items-center gap-2"
+                            title="Hover: Click to change"
+                          >
+                            <div
+                              className="text-sm font-medium cursor-pointer"
+                              onClick={() => startEditPayment(p)}
+                            >
+                              {formatMoney(p.payment_amount, p.payment_currency)}
+                            </div>
+                            <div
+                              className="text-xs text-gray-500"
+                              title="Click to change"
+                            >
+                              {p.payment_currency ?? ""}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              className="px-2 py-1 border rounded w-28"
+                              value={editingPaymentValues[p.id]?.amount ?? ""}
+                              onChange={(e) =>
+                                setEditingPaymentValues((prev) => ({
+                                  ...prev,
+                                  [p.id]: {
+                                    ...(prev[p.id] || { amount: "", currency: "USD" }),
+                                    amount: e.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                            <select
+                              className="px-2 py-1 border rounded"
+                              value={editingPaymentValues[p.id]?.currency ?? "USD"}
+                              onChange={(e) =>
+                                setEditingPaymentValues((prev) => ({
+                                  ...prev,
+                                  [p.id]: {
+                                    ...(prev[p.id] || { amount: "", currency: "USD" }),
+                                    currency: e.target.value,
+                                  },
+                                }))
+                              }
+                            >
+                              {currencyOptions.map((c) => (
+                                <option key={c} value={c}>
+                                  {c}
+                                </option>
+                              ))}
+                            </select>
+
+                            <button
+                              onClick={() => saveEditPayment(p.id)}
+                              className="px-3 py-1 rounded bg-indigo-600 text-white text-sm"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => cancelEditPayment(p.id)}
+                              className="px-3 py-1 rounded border text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Client badge */}
-                  <div className="mt-2">
-                    <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
-                      {client?.name || "—"}
-                    </span>
-                  </div>
+                  {/* Bottom area: delete moved to bottom-most part */}
+                  <div className="mt-4 flex flex-col items-start gap-2">
+                    {/* Payment status repeated as a small helper (kept intentionally visible) */}
+                    <div className="text-sm">
+                      Status:{" "}
+                      <span className="font-medium">
+                        {p.status === "completed" ? "Completed" : "Active"}
+                      </span>
+                    </div>
 
-                  {/* Payment details */}
-                  <div className="flex items-center gap-2 mt-3">
-                    <span className="font-medium text-sm">Payment:</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      className="px-2 py-1 border rounded w-24 text-sm font-medium text-indigo-700"
-                      value={p.payment_amount ?? 0}
-                      onChange={(e) =>
-                        updateProject(p.id, "payment_amount", parseFloat(e.target.value))
-                      }
-                    />
-                    <select
-                      className="px-2 py-1 border rounded w-20 text-sm font-medium text-indigo-700"
-                      value={p.payment_currency ?? "USD"}
-                      onChange={(e) =>
-                        updateProject(p.id, "payment_currency", e.target.value)
-                      }
-                    >
-                      {currencyOptions.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-
-                    <span
-                      className={`px-2 py-1 rounded-full text-sm font-medium ${paymentColor}`}
-                    >
-                      {p.payment_status}
-                    </span>
-                  </div>
-
-                  {/* Dates */}
-                  <div className="mt-2 text-sm text-gray-500">
-                    Start: {p.start_date ?? "—"} | Due: {p.due_date ?? "—"}
+                    {/* Delete / confirm delete */}
+                    {!confirmingDelete ? (
+                      <button
+                        onClick={() => setConfirmingDeleteId(p.id)}
+                        className="mt-2 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200"
+                        title="Click to confirm deletion"
+                      >
+                        Delete
+                      </button>
+                    ) : (
+                      <div className="mt-2 flex gap-2 items-center">
+                        <span className="text-sm text-gray-700">Confirm delete?</span>
+                        <button
+                          onClick={() => performDelete(p)}
+                          className="px-3 py-1 rounded bg-red-600 text-white text-sm"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() => setConfirmingDeleteId(null)}
+                          className="px-3 py-1 rounded border text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -489,4 +766,3 @@ export default function Projects() {
     </div>
   );
 }
-  
