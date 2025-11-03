@@ -25,6 +25,7 @@ class IsOwner(permissions.BasePermission):
 class ClientViewSet(viewsets.ModelViewSet):
     # ModelViewSet → Gives you CRUD (Create, Read, Update, Delete) without writing them
     #  manually.
+
     serializer_class = ClientSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
     # permissions.IsAuthenticated → Only logged-in users can use it.
