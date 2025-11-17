@@ -21,6 +21,8 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
+import { Asterisk } from "lucide-react";
+
 
 /* ---------- Types ---------- */
 type PaymentStatus = "paid" | "unpaid" | "partial";
@@ -277,12 +279,17 @@ export default function Projects() {
             <h2 className="text-lg font-medium text-gray-900">Add Project</h2>
             <form onSubmit={addProject} className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Title</Label>
+                <Label> 
+                   <Asterisk className="w-3 h-3 text-red-500" />
+                   Title
+                  </Label>
                 <Input className="mt-1 w-full" value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} required />
               </div>
 
               <div>
-                <Label>Client</Label>
+                <Label>
+                   <Asterisk className="w-3 h-3 text-red-500" />
+                  Client</Label>
                 {/* Combobox implemented with Command (searchable) */}
                 <div className="mt-1">
                   <Command>
@@ -292,8 +299,10 @@ export default function Projects() {
                         // try to find client by exact name, otherwise clear
                         const found = clients.find((c) => c.name === val);
                         setForm((s) => ({ ...s, client: found ? found.id : 0 }));
-                        setSearch(val);
-                      }}
+                        setSearch(val);           
+                      }
+                    }
+                    required
                       placeholder="Search or type to select…"
                     />
                     <CommandList>
@@ -323,7 +332,7 @@ export default function Projects() {
 
               <div>
                 <Label>Payment Amount</Label>
-                <Input type="number" min={0} step="0.01" className="mt-1 w-full" value={form.payment_amount} onChange={(e) => setForm((s) => ({ ...s, payment_amount: Number(e.target.value) }))} />
+                <Input type="number" min={0} step="0.01" className="mt-1 w-full" value={form.payment_amount} onChange={(e) => setForm((s) => ({ ...s, payment_amount: Number(e.target.value) }))} required />
               </div>
 
               <div>
