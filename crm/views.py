@@ -6,6 +6,12 @@ from rest_framework import viewsets, permissions, mixins, generics
 from .models import Client, Project
 from .serializers import ClientSerializer, ProjectSerializer
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+
+# Health check endpoint
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
 
 User = get_user_model()
 
