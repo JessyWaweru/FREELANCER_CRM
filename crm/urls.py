@@ -4,8 +4,6 @@ from rest_framework.routers import DefaultRouter
 # for your ViewSets.
 # Without it, you’d have to manually write all the paths for list, 
 # retrieve, create, update, and delete.
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
 from .views import ClientViewSet, ProjectViewSet, RegisterView
 from django.http import JsonResponse
 
