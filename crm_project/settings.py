@@ -15,113 +15,95 @@ import dj_database_url
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# If you want to read .env automatically (recommended):
-# pip install django-environ
-# import environ
-# env = environ.Env()
-# environ.Env.read_env(BASE_DIR / ".env")
-# DATABASE_URL = env("DATABASE_URL")  # then use this variable below
-
+# Load environment variables
 env = environ.Env()
-environ.Env.read_env(BASE_DIR / ".env")  # <-- THIS reads .env
+environ.Env.read_env(BASE_DIR / ".env")
 
-
-DATABASE_URL = env("DATABASE_URL", default="")  # get from .env
+DATABASE_URL = env("DATABASE_URL", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
+# DATABASES
 if not DATABASE_URL:
-    # if you want Postgres mandatory in prod only:
     if not DEBUG:
         raise RuntimeError("DATABASE_URL is not set but Postgres is required.")
-    # fallback for local dev if missing
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
-         }
+    }
 else:
     DATABASES = {
         "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-65bzugdd&t9)mnq(-kc_pjr3)6!ahzo1fiwgfb^wyxt96zdf)('
-
-
+# SECURITY
+SECRET_KEY = env("SECRET_KEY", default="django-insecure-secret-key")
 ALLOWED_HOSTS = ["freelancer-crm-ipx8.onrender.com", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = ["https://freelancer-crm-ipx8.onrender.com"]
 
-
-
 # Application definition
-
 INSTALLED_APPS = [
-    'crm',
-    'corsheaders',
-    'rest_framework',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "crm",
+    "corsheaders",
+    "rest_framework",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 ]
-
-
-
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # 👈 must be on top
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",  # MUST be first
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-CORS_ALLOW_ALL_ORIGINS = False     # safer
+
+# CORS configuration
 CORS_ALLOWED_ORIGINS = [
-    "https://jessywaweru.github.io",
+    "https://jessywaweru.github.io",  # GitHub Pages frontend
 ]
-
 CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOW_HEADERS = [
     "authorization",
     "content-type",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
-
+# REST Framework & JWT
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
+
 SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("Bearer",),  # must match the header you send
-    # Optional but helpful with clock skew:
+    "AUTH_HEADER_TYPES": ("Bearer",),
     "LEEWAY": 60,
 }
-ROOT_URLCONF = 'crm_project.urls'
 
+ROOT_URLCONF = "crm_project.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],  # no more templates
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -134,54 +116,24 @@ TEMPLATES = [
     },
 ]
 
-    
-WSGI_APPLICATION = 'crm_project.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-
-
+WSGI_APPLICATION = "crm_project.wsgi.application"
 
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
+# Static files
+STATIC_URL = "static/"
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
