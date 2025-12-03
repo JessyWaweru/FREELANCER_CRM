@@ -4,15 +4,25 @@ from rest_framework.routers import DefaultRouter
 # for your ViewSets.
 # Without it, you’d have to manually write all the paths for list, 
 # retrieve, create, update, and delete.
-from .views import  ClientViewSet, ProjectViewSet
-from .register import RegisterView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ClientViewSet, ProjectViewSet, RegisterView
+from django.http import JsonResponse
 
+# ✅ Health check view
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
+# ✅ API router
 router = DefaultRouter()
 router.register(r"clients", ClientViewSet, basename="client")
 router.register(r"projects", ProjectViewSet, basename="project")
 
+urlpatterns = [
+    # API endpoints
+    path("", include(router.urls)),
+    path("register/", RegisterView.as_view(), name="register"),
 
-urlpatterns = [path("", include(router.urls)),
-                path("register/", RegisterView.as_view(), name="register"),
-                
-               ]
+    # Health check endpoint for uptime ping
+    path("health/", health_check),
+]
