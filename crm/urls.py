@@ -4,8 +4,8 @@ from rest_framework.routers import DefaultRouter
 # for your ViewSets.
 # Without it, you’d have to manually write all the paths for list, 
 # retrieve, create, update, and delete.
-from .views import ClientViewSet, ProjectViewSet, RegisterView
-
+from .views import ClientViewSet, ProjectViewSet, health_check
+from .register import RegisterView
 # ✅ API router
 router = DefaultRouter()
 router.register(r"clients", ClientViewSet, basename="client")
