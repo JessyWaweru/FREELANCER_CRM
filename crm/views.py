@@ -7,11 +7,16 @@ from .models import Client, Project
 from .serializers import ClientSerializer, ProjectSerializer
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
-# Health check endpoint
-def health_check(request):
-    return JsonResponse({"status": "ok"})
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
+    def get(self, request):
+        return Response({"status": "ok"})
 
 User = get_user_model()
 

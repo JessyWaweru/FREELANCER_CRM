@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 # for your ViewSets.
 # Without it, you’d have to manually write all the paths for list, 
 # retrieve, create, update, and delete.
-from .views import ClientViewSet, ProjectViewSet, health_check
+from .views import ClientViewSet, ProjectViewSet, HealthCheckView
 from .register import RegisterView
 # ✅ API router
 router = DefaultRouter()
@@ -17,5 +17,6 @@ urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
 
     # Health check endpoint for uptime ping
-    path("health/", health_check),
+   path("health/", HealthCheckView.as_view()),
+
 ]

@@ -32,6 +32,7 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
     serializer_class = RegisterSerializer
+    authentication_classes = []  # 🔥 THIS FIXES 401 ON RENDER
 
     # Optional: strip password from response and standardize status
     def create(self, request, *args, **kwargs):
